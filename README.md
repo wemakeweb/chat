@@ -1,15 +1,17 @@
 #Chatserver
 ===
 _eig halt total unnötig_
-
-`npm install underscore socket.io express`
-
+##Install
+$ `npm install underscore socket.io express`
+##Start
+$ `node app.js`
 ##Todo
 - fix layout
 - fix message float
-- save messages in redis or something else
+- fix if the server restarts the client should reauthorize
+- add message store
 - add rooms switcher
 - add localstorage to remember user
-- notify user when somebody mention his name @name
-- count new messages in window title
-- show typing event in UI
+- add notify user when somebody mention his name @name
+- add count new messages in window title
+- add typing event in UI
