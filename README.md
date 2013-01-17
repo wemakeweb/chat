@@ -15,3 +15,4 @@ $ `node app.js`
 - add notify user when somebody mention his name @name
 - add count new messages in window title
 - add typing event in UI
+- add xmpp server to integrate chat in common chat clients
