@@ -2,7 +2,9 @@
 ===
 _eig halt total unnötig_
 ##Install
-$ `npm install underscore socket.io express`
+require redis to run
+
+$ `npm install`
 ##Start
 $ `node app.js`
 ##Todo
@@ -11,7 +13,7 @@ $ `node app.js`
 - fix if the server restarts the client should reauthorize
 - add message store ✔
 - add rooms switcher
-- add localstorage to remember user
+- add localstorage to remember user ✔
 - add notify user when somebody mention his name @name
 - add count new messages in window title
 - add typing event in UI ✔

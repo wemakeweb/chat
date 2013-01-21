@@ -42,6 +42,11 @@ box-shadow: -1px 0px 6px 0px #A8A8A8;
 	padding: 0px 10px 8px 10px;
 	font-size: 13px;
 	min-width: 420px;
+	border-top: 1px solid #ECECEC;
+	padding-top: 7px;
+}
+.message:last-child{
+	margin-bottom: 30px;
 }
 .message img{
 	float: left;
@@ -58,7 +63,12 @@ margin: 0px;
 .message-time{
 	float:right;
 	color:gray;
+	opacity: 0;
 }
+.message:hover .message-time{
+	opacity: 1;
+}
+
 .message-body div{
 	font: 14px "Source Sans Pro", "Helvetica Neue",Helvetica,Arial,sans-serif;
 }

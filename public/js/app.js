@@ -11,7 +11,14 @@
 			};
 			this.connect();
 			this.layout();
-			this.showLogin();
+
+			if(this.storedUser()){
+				this.bind();
+				this.socket.emit('user.new', this.user);	
+			} else {
+				this.showLogin();
+			}
+			
 
 			$(window).on("resize", $.proxy(this.layout, this));
 		},
@@ -42,6 +49,23 @@
 			}
 		},
 
+		storedUser : function(){
+			if(! "localStorage" in window){
+				alert("Upgrade your Browser!");
+				return false;
+			};	
+
+			if( localStorage.getItem("user.name")){
+				this.user = {
+					email : localStorage.getItem("user.email"),
+					name : localStorage.getItem("user.name")
+				};
+
+				return true;
+			}
+			
+		},
+
 		login : function(){
 			var $modal = $('#user-new').modal('hide'),
 				data = $modal.find('form').serializeArray();
@@ -52,7 +76,14 @@
 			};
 
 			this.bind();
-			this.socket.emit('user.new', this.user);		
+			this.socket.emit('user.new', this.user);	
+
+			if(! "localStorage" in window){
+				return alert("Upgrade your Browser!");
+			};	
+
+			localStorage.setItem("user.name", this.user.name);
+			localStorage.setItem("user.email", this.user.email);
 		},
 		connect : function(){
 			this.socket = io.connect('http://localhost');
@@ -71,13 +102,18 @@
 				$('#messages').append(this.$lastMessage);
 			}
 
-			$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 50 }, 200);
+			$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 30 }, 200);
 
 			this.lastMessage = message;
 		},
 
 		renderTyping : function(types){
 			clearTimeout(this.typingTimer);
+
+			if(types.name === this.user.name){
+				return;
+			}
+
 			$('#typing-info').html(types.name + " is typing…");
 
 			this.typingTimer = setTimeout(function(){
