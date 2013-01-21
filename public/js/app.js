@@ -1,4 +1,11 @@
 (function(){
+
+	function replaceURLWithHTMLLinks(text) {
+	    var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+	    return text.replace(exp,"<a href='$1' target='_blank'>$1</a>"); 
+	}
+
+
 	var App = {
 		Views : {},
 		Models : {},
@@ -86,7 +93,7 @@
 			localStorage.setItem("user.email", this.user.email);
 		},
 		connect : function(){
-			this.socket = io.connect('http://78.47.142.76:8080');
+			this.socket = io.connect('http://localhost:8080');
 		},
 
 		bind : function(){
@@ -95,6 +102,9 @@
 		},
 
 		renderMessage : function(message){
+			message.message = jQuery('<div/>').text(message.message).html();
+			message.message = replaceURLWithHTMLLinks(message.message);
+
 			if(this.lastMessage && this.lastMessage.user === message.user){
 				this.$lastMessage.find('.message-body').append('<div>' + message.message + '</div>');
 			} else {

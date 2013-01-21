@@ -82,7 +82,7 @@ User.prototype.sendRecent = function(){
 
 				//emit the message
 				self.socket.emit('message', {
-					message : _.escape(vals[0]),
+					message : vals[0],
 					user : vals[1],
 					time : vals[2],
 					name : _.escape(vals[4])
@@ -107,8 +107,12 @@ User.prototype.join = function(room){
 };
 
 User.prototype.onMessage = function(message){
+	var messageStr = message;
+
+		//TODO check if messages contains a mentioned user via @user
+
 	var m = {
-		message :  _.escape(message),
+		message :  messageStr,
 		name : this.name,
 		user : this.id,
 		time : new Date().getTime()
@@ -130,7 +134,6 @@ User.prototype.onMessage = function(message){
 	//push the message to the room list
 	redis_cli.lpush("chat:room:" + this.room, id);
 
-	//TODO check if messages contains a mentioned user via @user
 
 	//broadcast message to all other in this.room
 	socket.sockets.in(this.room).emit('message', m);
