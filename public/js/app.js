@@ -47,6 +47,7 @@
 		events : {
 			'click .btn-login-submit' : 'login',
 			'keydown #message-input' : 'keydown',
+			'keyup #message-input' : 'keyup',
 			'click #user-list li' : 'mentionUser',
 		},
 
@@ -59,13 +60,21 @@
 		},
 
 		keydown : function(event){
-			if(event.keyCode === 13){
+			if(!this.shift && event.keyCode === 13){
 				var $input = $(event.currentTarget);
-				this.socket.emit('message', $input.val());
+				this.socket.emit('message', $.trim($input.val()));
 				$input.val('');
 				event.preventDefault();
+			} else if(event.keyCode === 16){
+				this.shift = true;
 			} else {
 				this.socket.emit('typing');
+			}
+		},
+
+		keyup : function(event){
+			if(event.keyCode === 16){
+				this.shift = false;
 			}
 		},
 
@@ -150,6 +159,7 @@
 		renderMessage : function(message){
 			message.message = jQuery('<div/>').text(message.message).html();
 			message.message = replaceURLWithHTMLLinks(message.message);
+			message.message = message.message.replace(/\r?\n|\r/g, "<br>");
 
 			if(this.lastMessage && this.lastMessage.user === message.user){
 				this.$lastMessage.find('.message-body').append('<div>' + message.message + '</div>');

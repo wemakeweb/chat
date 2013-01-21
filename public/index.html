@@ -70,9 +70,9 @@
     <script type="text/template" id="template-message">
         <% var n = new Date(parseInt(message.time)); 
             if((+new Date() - 86400000) > n){
-                n = [n.getDay(),n.getMonth(), n.getFullYear()].join('.') +' ' + [n.getHours(), n.getMinutes()].join(':');
+                n = [('0'+n.getDate()).slice(-2), ('0'+(n.getMonth()+1)).slice(-2), n.getFullYear()].join('.')+' ' + [('0'+n.getMinutes()).slice(-2), ('0'+n.getHours()).slice(-2)].join(':');
             } else {
-                n = [n.getHours(), n.getMinutes()].join(':');
+                n = [('0'+n.getHours()).slice(-2), ('0'+n.getMinutes()).slice(-2)].join(':');
             } 
         %>
         <div class="message clearfix">
