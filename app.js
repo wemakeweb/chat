@@ -27,7 +27,7 @@ redis_cli.get('chat:message:index', function(err, val){
 
 process.on('uncaughtException', function(err) {
 	console.log(err);
-	
+
 	var errStr =  (new Date).toUTCString();
 		errStr += err.stack;
 		errStr += "\n";
@@ -61,7 +61,7 @@ function User(options){
 		hash.update(options.email);
 
 	this.id = hash.digest('hex');
-	this.name =  _.escapeHTML(options.name);
+	this.name =  _.escape(options.name);
 	this.socket = options.socket;
 	this.room = null;
 	this.bind();
@@ -82,10 +82,10 @@ User.prototype.sendRecent = function(){
 
 				//emit the message
 				self.socket.emit('message', {
-					message : _.escapeHTML(vals[0]),
+					message : _.escape(vals[0]),
 					user : vals[1],
 					time : vals[2],
-					name : _.escapeHTML(vals[4])
+					name : _.escape(vals[4])
 				});
 			});
 		});
@@ -108,7 +108,7 @@ User.prototype.join = function(room){
 
 User.prototype.onMessage = function(message){
 	var m = {
-		message :  _.escapeHTML(message),
+		message :  _.escape(message),
 		name : this.name,
 		user : this.id,
 		time : new Date().getTime()
