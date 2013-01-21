@@ -7,10 +7,6 @@ var express = require('express'),
 	redis_cli = redis.createClient(),
 	_ = require('underscore');
 
-var Simon = {
-
-};
-
 //redis client error
 redis_cli.on("error", function (err) {
     console.log("Redis Error " + err);
@@ -26,6 +22,8 @@ redis_cli.get('chat:message:index', function(err, val){
 		Simon.message_index = val;
 	}
 });
+
+process.
 
 server.listen(8080);
 console.log("listening :8080");
@@ -53,7 +51,7 @@ function User(options){
 		hash.update(options.email);
 
 	this.id = hash.digest('hex');
-	this.name = options.name;
+	this.name =  _.str.escapeHTML(options.name);
 	this.socket = options.socket;
 	this.room = null;
 	this.bind();
@@ -74,10 +72,10 @@ User.prototype.sendRecent = function(){
 
 				//emit the message
 				self.socket.emit('message', {
-					message : vals[0],
+					message : _.str.escapeHTML(vals[0]),
 					user : vals[1],
 					time : vals[2],
-					name : vals[4]
+					name : _.str.escapeHTML(vals[4])
 				});
 			});
 		});
@@ -100,7 +98,7 @@ User.prototype.join = function(room){
 
 User.prototype.onMessage = function(message){
 	var m = {
-		message : message,
+		message :  _.str.escapeHTML(message),
 		name : this.name,
 		user : this.id,
 		time : new Date().getTime()
