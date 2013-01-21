@@ -41,7 +41,7 @@ console.log("listening :8080");
 app.use(express.favicon());
 app.use('/', express.static(__dirname + '/public'));
 
-socket.set('log level', 2);
+//socket.set('log level', 2);
 
 socket.sockets.on('connection', function (socket) {
 	
@@ -51,6 +51,10 @@ socket.sockets.on('connection', function (socket) {
 	});
 
 
+});
+
+socket.sockets.on("error", function(err){
+	console.error(err);
 });
 
 
@@ -78,14 +82,14 @@ User.prototype.sendRecent = function(){
 		items.reverse().forEach(function(id){
 
 			//get the individual message
-			redis_cli.hvals("chat:message:" + id , function(err, vals){
+			redis_cli.hmget("chat:message:" + id ,'message', 'user', 'time', 'name', function(err, vals){
 
 				//emit the message
 				self.socket.emit('message', {
 					message : vals[0],
 					user : vals[1],
 					time : vals[2],
-					name : _.escape(vals[4])
+					name : vals[3]
 				});
 			});
 		});
@@ -107,12 +111,12 @@ User.prototype.join = function(room){
 };
 
 User.prototype.onMessage = function(message){
-	var messageStr = message;
+	var messageStr =  message;
 
 		//TODO check if messages contains a mentioned user via @user
 
 	var m = {
-		message :  messageStr,
+		message : messageStr,
 		name : this.name,
 		user : this.id,
 		time : new Date().getTime()

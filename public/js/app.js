@@ -105,6 +105,8 @@
 			message.message = jQuery('<div/>').text(message.message).html();
 			message.message = replaceURLWithHTMLLinks(message.message);
 
+			console.log(message.message)
+
 			if(this.lastMessage && this.lastMessage.user === message.user){
 				this.$lastMessage.find('.message-body').append('<div>' + message.message + '</div>');
 			} else {
