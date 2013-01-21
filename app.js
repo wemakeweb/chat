@@ -7,7 +7,9 @@ var express = require('express'),
 	redis_cli = redis.createClient(),
 	_ = require('underscore');
 
-var Simon = {};
+var Simon = {
+	users : {},
+};
 
 //redis client error
 redis_cli.on("error", function (err) {
@@ -41,23 +43,32 @@ console.log("listening :8080");
 app.use(express.favicon());
 app.use('/', express.static(__dirname + '/public'));
 
-//socket.set('log level', 2);
+socket.set('log level', 2);
 
 socket.sockets.on('connection', function (socket) {
 	
 	socket.on('user.new', function (data){
-		new User({ name : data.name, email: data.email, socket: socket });
-		//TODO add User to a collection of all online users
+		var user = new User({ name : data.name, email: data.email, socket: socket });
+		Simon.users[user.id] = user;
+		Simon.updateUsers();
 	});
-
-
 });
 
 socket.sockets.on("error", function(err){
 	console.error(err);
 });
 
+Simon.updateUsers = function(){
+	var list = [];
+	_.each(this.users, function(user){
+		list.push({
+			id: user.id,
+			name : user.name
+		});
+	});
 
+	socket.sockets.emit("users", list);
+};
 
 function User(options){
 	//we hash the email to get gravatar url & that hash is the user id
@@ -72,6 +83,7 @@ function User(options){
 	this.join(1);
 	this.sendRecent();
 };
+
 
 
 User.prototype.sendRecent = function(){
@@ -99,8 +111,12 @@ User.prototype.sendRecent = function(){
 User.prototype.bind = function(){
 	this.socket.on('message', _.bind(this.onMessage, this));
 	this.socket.on('typing', _.bind(this.onTyping, this));
+	this.socket.on('disconnect', _.bind(this.disconnect, this));
 }
-
+User.prototype.disconnect = function(){
+	delete Simon.users[this.id];
+	Simon.updateUsers();
+};
 User.prototype.join = function(room){
 	if(this.room){
 		this.socket.leave(this.room);

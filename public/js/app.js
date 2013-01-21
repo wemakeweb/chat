@@ -3,7 +3,16 @@
 	function replaceURLWithHTMLLinks(text) {
 	    var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
 	    return text.replace(exp,"<a href='$1' target='_blank'>$1</a>"); 
-	}
+	};
+
+	Tinycon.setOptions({
+	    width: 7,
+	    height: 9,
+	    font: '10px arial',
+	    colour: '#ffffff',
+	    background: '#549A2F',
+	    fallback: true
+	});
 
 
 	var App = {
@@ -12,6 +21,8 @@
 		Collections : {}
 	};
 	App.Views.Main = Backbone.View.extend({
+		notifications : [],
+
 		initialize : function(){
 			this.templates = {
 				message : _.template($.trim($('#template-message').text()))
@@ -28,13 +39,15 @@
 			
 
 			$(window).on("resize", $.proxy(this.layout, this));
+			$(window).on("mousemove", $.proxy(this.active, this));
 		},
 
 		el : $('#app'),
 
 		events : {
 			'click .btn-login-submit' : 'login',
-			'keydown #message-input' : 'keydown'
+			'keydown #message-input' : 'keydown',
+			'click #user-list li' : 'mentionUser',
 		},
 
 		layout : function(){
@@ -54,6 +67,20 @@
 			} else {
 				this.socket.emit('typing');
 			}
+		},
+
+		active : function(){
+			if(this.notifications.length > 0){
+				this.clearNotifications();
+			}
+
+			this.lastActive = new Date();
+		},
+
+		clearNotifications : function(){
+			this.$el.find(".message.new").removeClass("new");
+			this.notifications = [];
+			Tinycon.setBubble(0);
 		},
 
 		storedUser : function(){
@@ -99,13 +126,29 @@
 		bind : function(){
 			this.socket.on('message', $.proxy(this.renderMessage, this));
 			this.socket.on('typing', $.proxy(this.renderTyping, this))
+			this.socket.on('users', $.proxy(this.renderUsers, this));
+		},
+
+		mentionUser : function(event){
+			var user = $(event.currentTarget).data('user'),
+				$input = $('#message-input');
+
+			$input.insertAtCaret(' @' + user + ' ');
+		},
+
+		renderUsers : function(users){
+			var $list = $('<ul />');
+
+			$.each(users, function(i, user){
+				$list.append('<li data-user="'+user.name+'"><span></span>' +user.name+'</li>');
+			});
+
+			$('#user-list').html($list);
 		},
 
 		renderMessage : function(message){
 			message.message = jQuery('<div/>').text(message.message).html();
 			message.message = replaceURLWithHTMLLinks(message.message);
-
-			console.log(message.message)
 
 			if(this.lastMessage && this.lastMessage.user === message.user){
 				this.$lastMessage.find('.message-body').append('<div>' + message.message + '</div>');
@@ -115,7 +158,14 @@
 			}
 
 			$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 30 }, 200);
+			
+			if(message.time >= this.lastActive && message.name !== this.user.name && (message.user !== this.lastMessage.user || message.user === this.lastMessage.user && message.time > this.lastActive && this.notifications.indexOf(message.user) < 0)){
 
+				this.notifications.push(message.user);
+				Tinycon.setBubble(this.notifications.length);
+				this.$lastMessage.addClass("new");
+			}
+			
 			this.lastMessage = message;
 		},
 
