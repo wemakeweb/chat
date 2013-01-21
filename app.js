@@ -59,7 +59,7 @@ function User(options){
 		hash.update(options.email);
 
 	this.id = hash.digest('hex');
-	this.name =  _.str.escapeHTML(options.name);
+	this.name =  _.escapeHTML(options.name);
 	this.socket = options.socket;
 	this.room = null;
 	this.bind();
@@ -80,10 +80,10 @@ User.prototype.sendRecent = function(){
 
 				//emit the message
 				self.socket.emit('message', {
-					message : _.str.escapeHTML(vals[0]),
+					message : _.escapeHTML(vals[0]),
 					user : vals[1],
 					time : vals[2],
-					name : _.str.escapeHTML(vals[4])
+					name : _.escapeHTML(vals[4])
 				});
 			});
 		});
@@ -106,7 +106,7 @@ User.prototype.join = function(room){
 
 User.prototype.onMessage = function(message){
 	var m = {
-		message :  _.str.escapeHTML(message),
+		message :  _.escapeHTML(message),
 		name : this.name,
 		user : this.id,
 		time : new Date().getTime()
