@@ -140,5 +140,3 @@ User.prototype.onTyping = function(){
 		user : this.id
 	});
 };
-
-sss
