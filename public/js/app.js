@@ -93,7 +93,7 @@
 			localStorage.setItem("user.email", this.user.email);
 		},
 		connect : function(){
-			this.socket = io.connect('http://127.0.0.1:8080');
+			this.socket = io.connect(document.location.hostname + ':8080');
 		},
 
 		bind : function(){
