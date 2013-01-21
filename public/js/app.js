@@ -137,10 +137,11 @@
 		},
 
 		renderUsers : function(users){
-			var $list = $('<ul />');
+			var $list = $('<ul />'),
+				self = this;
 
 			$.each(users, function(i, user){
-				$list.append('<li data-user="'+user.name+'"><span></span>' +user.name+'</li>');
+				$list.append('<li data-user="'+user.name+'"><span></span>' +(user.name === self.user.name ? 'You' : user.name)+'</li>');
 			});
 
 			$('#user-list').html($list);
