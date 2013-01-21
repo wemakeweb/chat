@@ -7,6 +7,8 @@ var express = require('express'),
 	redis_cli = redis.createClient(),
 	_ = require('underscore');
 
+var Simon = {};
+
 //redis client error
 redis_cli.on("error", function (err) {
     console.log("Redis Error " + err);
@@ -24,12 +26,11 @@ redis_cli.get('chat:message:index', function(err, val){
 });
 
 process.on('uncaughtException', function(err) {
- 	var fs = require("fs");
+	var errStr =  (new Date).toUTCString();
+		errStr += err.stack;
+		errStr += "\n";
 
- 	var file = fs.openSync("/opt/node/chat/app.log", "r+"),
- 		buff = JSON.stringify(err);
-
- 	fs.writeSync(file, 0, buff.length, JSON.stringify(err));
+ 	require("fs").appendFileSync("app.log", errStr);
 });
 
 server.listen(8080);
@@ -139,3 +140,5 @@ User.prototype.onTyping = function(){
 		user : this.id
 	});
 };
+
+sss
