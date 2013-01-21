@@ -23,7 +23,14 @@ redis_cli.get('chat:message:index', function(err, val){
 	}
 });
 
-process.
+process.on('uncaughtException', function(err) {
+ 	var fs = require("fs");
+
+ 	var file = fs.openSync("/opt/node/chat/app.log", "r+"),
+ 		buff = JSON.stringify(err);
+
+ 	fs.writeSync(file, 0, buff.length, JSON.stringify(err));
+});
 
 server.listen(8080);
 console.log("listening :8080");
