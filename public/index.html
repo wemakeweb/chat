@@ -68,29 +68,13 @@
             } else {
                 n = [n.getHours(), n.getMinutes()].join(':');
             } 
-
-             var entityMap = {
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': '&quot;',
-                "'": '&#39;',
-                "/": '&#x2F;'
-              };
-
-              function escapeHtml(string) {
-                return String(string).replace(/[&<>"'\/]/g, function (s) {
-                  return entityMap[s];
-                });
-              }
-
         %>
         <div class="message clearfix">
             <img src="http://www.gravatar.com/avatar/<%= message.user %>" />
             <div class="message-body">
                 <h5><%= message.name %></h5>
                 <span class="message-time"><%= n %></span>
-                <div><%= escapeHtml(message.message) %></div>
+                <div><%= message.message %></div>
             </div>
         </div>
     </script>

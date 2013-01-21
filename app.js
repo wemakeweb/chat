@@ -26,6 +26,8 @@ redis_cli.get('chat:message:index', function(err, val){
 });
 
 process.on('uncaughtException', function(err) {
+	console.log(err);
+	
 	var errStr =  (new Date).toUTCString();
 		errStr += err.stack;
 		errStr += "\n";
