@@ -6,8 +6,8 @@ $ `npm install underscore socket.io express`
 ##Start
 $ `node app.js`
 ##Todo
-- fix layout
-- fix message float
+- fix layout ✔
+- fix message float ✔
 - fix if the server restarts the client should reauthorize
 - add message store ✔
 - add rooms switcher

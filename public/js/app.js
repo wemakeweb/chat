@@ -63,7 +63,7 @@
 		},
 
 		renderMessage : function(message){
-			if(this.lastMessage && this.lastMessage.user_name === message.user_name){
+			if(this.lastMessage && this.lastMessage.user === message.user){
 				this.$lastMessage.find('.message-body').append('<div>' + message.message + '</div>');
 			} else {
 				this.$lastMessage = $(this.templates.message({ message: message }));

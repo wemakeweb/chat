@@ -41,6 +41,7 @@ box-shadow: -1px 0px 6px 0px #A8A8A8;
 .message{
 	padding: 0px 10px 8px 10px;
 	font-size: 13px;
+	min-width: 420px;
 }
 .message img{
 	float: left;
@@ -52,6 +53,11 @@ margin: 0px;
 }
 .message-body{
 	float: left;
+	width:80%;
+}
+.message-time{
+	float:right;
+	color:gray;
 }
 .message-body div{
 	font: 14px "Source Sans Pro", "Helvetica Neue",Helvetica,Arial,sans-serif;

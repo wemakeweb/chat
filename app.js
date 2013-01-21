@@ -48,12 +48,11 @@ socket.sockets.on('connection', function (socket) {
 
 
 function User(options){
-	//we hash the email to get gravatar url
+	//we hash the email to get gravatar url & that hash is the user id
 	var hash = crypto.createHash('md5');
 		hash.update(options.email);
 
-	this.pic = hash.digest('hex');
-	this.id = 1;
+	this.id = hash.digest('hex');
 	this.name = options.name;
 	this.socket = options.socket;
 	this.room = null;
@@ -62,12 +61,13 @@ function User(options){
 	this.sendRecent();
 };
 
+
 User.prototype.sendRecent = function(){
 	var self = this;
 
 	//get the recent items in range 0 - 50
 	redis_cli.lrange("chat:room:" + this.room, 0, 50 , function(err, items){
-		items.forEach(function(id){
+		items.reverse().forEach(function(id){
 
 			//get the individual message
 			redis_cli.hvals("chat:message:" + id , function(err, vals){
@@ -75,8 +75,9 @@ User.prototype.sendRecent = function(){
 				//emit the message
 				socket.sockets.in(self.room).emit('message', {
 					message : vals[0],
-					user_name : vals[1],
-					time : vals[2]
+					user : vals[1],
+					time : vals[2],
+					name : vals[4]
 				});
 			});
 		});
@@ -100,8 +101,8 @@ User.prototype.join = function(room){
 User.prototype.onMessage = function(message){
 	var m = {
 		message : message,
-		user_name : this.name,
-		user_pic : this.pic,
+		name : this.name,
+		user : this.id,
 		time : new Date().getTime()
 	},
 	id = ++Simon.message_index;
@@ -115,6 +116,8 @@ User.prototype.onMessage = function(message){
 	redis_cli.hset("chat:message:" + id , "user", this.id);
 	redis_cli.hset("chat:message:" + id , "time", m.time);
 	redis_cli.hset("chat:message:" + id , "room", this.room);
+	redis_cli.hset("chat:message:" + id , "name", this.name);
+
 
 	//push the message to the room list
 	redis_cli.lpush("chat:room:" + this.room, id);
@@ -127,7 +130,7 @@ User.prototype.onMessage = function(message){
 
 User.prototype.onTyping = function(){
 	socket.sockets.in(this.room).emit('typing', {
-		user_name : this.name,
-		user_pic : this.pic
+		name : this.name,
+		user : this.id
 	});
 };
