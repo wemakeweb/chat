@@ -9,7 +9,7 @@ $ `node app.js`
 - fix layout
 - fix message float
 - fix if the server restarts the client should reauthorize
-- add message store
+- add message store ✔
 - add rooms switcher
 - add localstorage to remember user
 - add notify user when somebody mention his name @name

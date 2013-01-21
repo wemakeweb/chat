@@ -1,0 +1,21 @@
+{
+  "name": "chatserver",
+  "version": "0.5.0",
+  "author": "Sebastian <sotto@heythe.re>",
+  "description": "Heythere Chatserver",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wemakeweb/chat.git"
+  },
+  "dependencies" : {
+    "underscore":"*",
+    "hiredis" : "*",
+    "redis" : "*",
+    "express" : "*",
+    "connect" : "*",
+    "socket.io" : "*"
+  },
+  "engines": {
+    "node": ">=0.8"
+  }
+}
