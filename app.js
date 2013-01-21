@@ -73,7 +73,7 @@ User.prototype.sendRecent = function(){
 			redis_cli.hvals("chat:message:" + id , function(err, vals){
 
 				//emit the message
-				socket.sockets.in(self.room).emit('message', {
+				self.socket.emit('message', {
 					message : vals[0],
 					user : vals[1],
 					time : vals[2],

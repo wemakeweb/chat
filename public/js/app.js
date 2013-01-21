@@ -60,6 +60,7 @@
 
 		bind : function(){
 			this.socket.on('message', $.proxy(this.renderMessage, this));
+			this.socket.on('typing', $.proxy(this.renderTyping, this))
 		},
 
 		renderMessage : function(message){
@@ -69,9 +70,19 @@
 				this.$lastMessage = $(this.templates.message({ message: message }));
 				$('#messages').append(this.$lastMessage);
 			}
-			$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight }, 200);
+
+			$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 50 }, 200);
 
 			this.lastMessage = message;
+		},
+
+		renderTyping : function(types){
+			clearTimeout(this.typingTimer);
+			$('#typing-info').html(types.name + " is typing…");
+
+			this.typingTimer = setTimeout(function(){
+				$('#typing-info').html("");
+			}, 500);
 		},
 	});
 
