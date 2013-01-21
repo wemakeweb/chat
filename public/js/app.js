@@ -86,7 +86,7 @@
 			localStorage.setItem("user.email", this.user.email);
 		},
 		connect : function(){
-			this.socket = io.connect('http://78.47.142.76');
+			this.socket = io.connect('http://78.47.142.76:8080');
 		},
 
 		bind : function(){
