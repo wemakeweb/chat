@@ -64,8 +64,10 @@ margin: 0px;
 	float:right;
 	color:gray;
 	opacity: 0;
+	position: relative;
+	top:-20px;
 }
-.message:hover .message-time{
+.message:hover .message-time, .message:last-child .message-time{
 	opacity: 1;
 }
 
