@@ -106,12 +106,13 @@ Simon.getRecent = function(room, items, cb, ctx){
 		
 		items.reverse().forEach(function(id){
 			
-			redis_cli.hmget("chat:message:" + id ,'message', 'user', 'time', 'name', function(err, vals){
+			redis_cli.hmget("chat:message:" + id ,'message', 'user', 'time', 'name','room', function(err, vals){
 				_items.push({
 					message : vals[0],
 					user : vals[1],
 					time : vals[2],
-					name : vals[3]
+					name : vals[3],
+					room : vals[4]
 				});
 
 				resolve();

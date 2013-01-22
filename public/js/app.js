@@ -159,7 +159,7 @@
 			$t.addClass('active');
 
 			$('#messages').html("");
-			
+
 			this.room = room;
 			this.socket.emit('switchRoom', room);
 		},
@@ -188,6 +188,7 @@
 			message.message = jQuery('<div/>').text(message.message).html();
 			message.message = replaceURLWithHTMLLinks(message.message);
 			message.message = message.message.replace(/\r?\n|\r/g, "<br>");
+			message.room = parseInt(message.room);
 
 			var n = new Date(parseInt(message.time)); 
             if((+new Date() - 86400000) > n){
