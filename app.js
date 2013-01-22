@@ -50,7 +50,7 @@ socket.sockets.on('connection', function (socket) {
 	socket.on('user.new', function (data){
 		var user = new User({ name : data.name, email: data.email, socket: socket });
 		Simon.users[user.id] = user;
-		Simon.updateUsers();
+		Simon.updateConversationList();
 	});
 });
 
@@ -58,24 +58,73 @@ socket.sockets.on("error", function(err){
 	console.error(err);
 });
 
-Simon.updateUsers = function(){
-	var rooms = {};
-	
-	_.each(this.users, function(user){
-		if(rooms[user.room]){
-			rooms[user.room].push({
-				id: user.id,
-				name : user.name
-			})
-		} else {
-			rooms[user.room] = [{
-				id: user.id,
-				name : user.name
-			}]
-		}
+Simon.updateConversationList = function(){
+	Simon.getAllRecent( [1,2,3], 0, function(rooms){
+
+		_.each(Simon.users, function(user){
+			if(rooms[user.room].users){
+				rooms[user.room].users.push({
+					id: user.id,
+					name : user.name
+				})
+			} else {
+				rooms[user.room].users = [{
+					id: user.id,
+					name : user.name
+				}]
+			}
+		});
+
+		socket.sockets.emit("updateConversationList", rooms);
+	});	
+};
+
+Simon.getAllRecent = function(rooms, items, cb, ctx){
+	var _items = {},
+		fetch = rooms.length;
+
+	rooms.forEach(function(room){
+		Simon.getRecent(room, items, function(item){
+			_items[room] = {messages: item };
+			resolve();
+		});
 	});
 
-	socket.sockets.emit("users", rooms);
+	function resolve(){
+		if(--fetch === 0){
+			cb.call(ctx||this, _items)
+		}
+	};
+};
+
+Simon.getRecent = function(room, items, cb, ctx){
+	var _items = [],
+		fetch = 0;
+
+	redis_cli.lrange("chat:room:" + room, 0, items , function(err, items){
+		fetch = items.length;
+		
+		items.reverse().forEach(function(id){
+			
+			redis_cli.hmget("chat:message:" + id ,'message', 'user', 'time', 'name', function(err, vals){
+				_items.push({
+					message : vals[0],
+					user : vals[1],
+					time : vals[2],
+					name : vals[3]
+				});
+
+				resolve();
+			});
+		});
+	});
+
+	function resolve(){
+		if(--fetch === 0){
+			cb.call(ctx || this, _items);
+		} 
+	};
+
 };
 
 function User(options){
@@ -97,21 +146,9 @@ function User(options){
 User.prototype.sendRecent = function(){
 	var self = this;
 
-	//get the recent items in range 0 - 50
-	redis_cli.lrange("chat:room:" + this.room, 0, 50 , function(err, items){
-		items.reverse().forEach(function(id){
-
-			//get the individual message
-			redis_cli.hmget("chat:message:" + id ,'message', 'user', 'time', 'name', function(err, vals){
-
-				//emit the message
-				self.socket.emit('message', {
-					message : vals[0],
-					user : vals[1],
-					time : vals[2],
-					name : vals[3]
-				});
-			});
+	Simon.getRecent(this.room, 50, function(items){
+		items.forEach(function(item){
+			self.socket.emit('message', item);
 		});
 	});
 };
@@ -126,7 +163,7 @@ User.prototype.onRoomSwitch = function(room){
 	console.log("%s switching in %s", this.name, room);
 	this.join(room);
 	this.sendRecent();
-	Simon.updateUsers();
+	Simon.updateConversationList();
 };
 
 User.prototype.disconnect = function(){
@@ -151,7 +188,8 @@ User.prototype.onMessage = function(message){
 		message : messageStr,
 		name : this.name,
 		user : this.id,
-		time : new Date().getTime()
+		time : new Date().getTime(),
+		room : this.room,
 	},
 	id = ++Simon.message_index;
 
@@ -166,13 +204,11 @@ User.prototype.onMessage = function(message){
 	redis_cli.hset("chat:message:" + id , "room", this.room);
 	redis_cli.hset("chat:message:" + id , "name", this.name);
 
-
 	//push the message to the room list
 	redis_cli.lpush("chat:room:" + this.room, id);
 
-
-	//broadcast message to all other in this.room
-	socket.sockets.in(this.room).emit('message', m);
+	//broadcast message to all others
+	socket.sockets.emit('message', m);
 };
 
 User.prototype.onTyping = function(){

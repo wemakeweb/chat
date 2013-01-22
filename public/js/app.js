@@ -140,7 +140,7 @@
 		bind : function(){
 			this.socket.on('message', $.proxy(this.renderMessage, this));
 			this.socket.on('typing', $.proxy(this.renderTyping, this))
-			this.socket.on('users', $.proxy(this.renderUsers, this));
+			this.socket.on('updateConversationList', $.proxy(this.renderConversationList, this));
 		},
 
 		mentionUser : function(event){
@@ -161,18 +161,24 @@
 			this.socket.emit('switchRoom', room);
 		},
 
-		renderUsers : function(rooms){
-			$('#conversations > li .user-list').html('');
+		renderConversationList : function(convs){
+			var $ul = $('<ul />');
 
-			$.each(rooms, function(room, users){
-				var $list = $('<ul />');
-
-				$.each(users, function(i, user){
-					$list.append('<li data-user="'+user.name+'"><img src="http://gravatar.com/avatar/' + user.id +'" /><span></span></li>');
-				});
-
-				$('#conversations > li[data-room="' + room +'"] .user-list').html($list);
+			$.each(convs, function(name, conv){
+				var $conv = $('#conversations > li[data-room="' + name +'"]'),
+					message = conv.messages[0];
+					
+					if(conv.users){
+						$.each(conv.users, function(i, user){
+							$ul.append('<li data-user="'+user.name+'"><img src="http://gravatar.com/avatar/' + user.id +'" /><span></span></li>');
+						});
+					}
+					
+					$conv.find(' .text').html( message.name +': ' + message.message );
+					$conv.find('.time').text(message.time);
 			});
+
+			$('.user-list').html($ul);
 		},
 
 		renderMessage : function(message){
@@ -180,35 +186,48 @@
 			message.message = replaceURLWithHTMLLinks(message.message);
 			message.message = message.message.replace(/\r?\n|\r/g, "<br>");
 
-			if(this.lastMessage && this.lastMessage.user === message.user){
-				this.$lastMessage.find('.message-body').append('<div>' + message.message + '</div>');
+			var n = new Date(parseInt(message.time)); 
+            if((+new Date() - 86400000) > n){
+                message.time = [('0'+n.getDate()).slice(-2), ('0'+(n.getMonth()+1)).slice(-2), n.getFullYear()].join('.')+' ' + [('0'+n.getMinutes()).slice(-2), ('0'+n.getHours()).slice(-2)].join(':');
+            } else {
+                message.time = [('0'+n.getHours()).slice(-2), ('0'+n.getMinutes()).slice(-2)].join(':');
+            } 
+
+			if(message.room === this.room){
+				if(this.lastMessage && this.lastMessage.user === message.user){
+					this.$lastMessage.find('.message-body').append('<div>' + message.message + '</div>');
+				} else {
+					this.$lastMessage = $(this.templates.message({ message: message }));
+					$('#messages').append(this.$lastMessage);
+				}
+
+				$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 30 }, 200);
+				
+				if(message.time >= this.lastActive && message.name !== this.user.name && (message.user !== this.lastMessage.user || message.user === this.lastMessage.user && message.time > this.lastActive && this.notifications.indexOf(message.user) < 0)){
+
+					//experimental notifications
+					if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) { 
+	    				var notification = window.webkitNotifications.createNotification(
+	    					'http://gravatar.com/avatar/' + message.user + '.jpg', message.name, message.message);
+					    notification.show();
+
+					    notification.onclick = $.proxy(function(){
+					    	this.clearNotifications();
+					    	notification.close();
+					    }, this);	
+	  				}
+
+					this.notifications.push(message.user);
+					Tinycon.setBubble(this.notifications.length);
+					this.$lastMessage.addClass("new");
+				}
+
+				this.lastMessage = message;
 			} else {
-				this.$lastMessage = $(this.templates.message({ message: message }));
-				$('#messages').append(this.$lastMessage);
+				var $conversation = $('#conversations > li[data-room="' + message.room +'"]');
+				$conversation.find(' .text').html(message.name +': ' + message.message );
+				$conversation.find('.time').text(message.time);
 			}
-
-			$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 30 }, 200);
-			
-			if(message.time >= this.lastActive && message.name !== this.user.name && (message.user !== this.lastMessage.user || message.user === this.lastMessage.user && message.time > this.lastActive && this.notifications.indexOf(message.user) < 0)){
-
-				//experimental notifications
-				if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) { 
-    				var notification = window.webkitNotifications.createNotification(
-    					'http://gravatar.com/avatar/' + message.user + '.jpg', message.name, message.message);
-				    notification.show();
-
-				    notification.onclick = $.proxy(function(){
-				    	this.clearNotifications();
-				    	notification.close();
-				    }, this);	
-  				}
-
-				this.notifications.push(message.user);
-				Tinycon.setBubble(this.notifications.length);
-				this.$lastMessage.addClass("new");
-			}
-			
-			this.lastMessage = message;
 		},
 
 		renderTyping : function(types){
