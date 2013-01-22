@@ -168,7 +168,7 @@ User.prototype.onRoomSwitch = function(room){
 
 User.prototype.disconnect = function(){
 	delete Simon.users[this.id];
-	Simon.updateUsers();
+	Simon.updateConversationList();
 };
 User.prototype.join = function(room){
 	if(this.room){
