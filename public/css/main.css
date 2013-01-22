@@ -114,6 +114,8 @@ color: #333;
 float: left;
 width: 30px;
 height: 30px;
+margin-right:2px;
+margin-bottom: 2px;
 }
 #user-list li:hover{
 	text-decoration: underline;
