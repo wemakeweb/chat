@@ -39,17 +39,6 @@
 				this.showLogin();
 			}
 
-			if(window.webkitNotifications){
-				if(window.webkitNotifications.checkPermission() === 1){
-					window.webkitNotifications.requestPermission();
-				}
-			}
-
-		/*	i else {
-    
-  }*/
-			
-
 			$(window).on("resize", $.proxy(this.layout, this));
 			$(window).on("mousemove", $.proxy(this.active, this));
 		},
