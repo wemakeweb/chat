@@ -39,6 +39,10 @@
 				this.showLogin();
 			}
 
+			if(window.webkitNotifications && window.webkitNotifications.checkPermission() === 1){
+				$('#noti-trigger').fadeIn();
+			}
+
 			$(window).on("resize", $.proxy(this.layout, this));
 			$(window).on("mousemove", $.proxy(this.active, this));
 		},
@@ -178,6 +182,10 @@
     				var notification = window.webkitNotifications.createNotification(
     					'http://gravatar.com/avatar/' + message.user, message.name, message.message);
 				    notification.show();
+
+				    notification.onclick = function(){
+				    	notification.close();
+				    };	
   				}
 
 				this.notifications.push(message.user);
