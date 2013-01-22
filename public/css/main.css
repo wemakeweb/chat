@@ -105,12 +105,15 @@ box-shadow: 0px 1px 1px 0px #BDBDBD;
 background: rgba(255, 255, 255, 0.7);
 padding: 0px 5px;
 overflow: hidden;
-margin:0;
+margin: 0px 0 0 10px;
 }
 #user-list li {
 list-style: none;
 cursor: pointer;
 color: #333;
+float: left;
+width: 30px;
+height: 30px;
 }
 #user-list li:hover{
 	text-decoration: underline;
@@ -129,13 +132,13 @@ display: none;
 }
 #user-list span {
 display: inline-block;
-width: 5px;
-height: 5px;
+width: 6px;
+height: 6px;
 background: #90DB65;
-margin-right: 6px;
-margin-left: 9px;
 position: relative;
-top: -1px;
-border: 1px solid #629B42;
-border-radius: 22px;
+margin-left: -29px;
+top: 10px;
+}
+#user-list img {
+width: 30px;
 }

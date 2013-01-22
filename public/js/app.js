@@ -150,7 +150,7 @@
 				self = this;
 
 			$.each(users, function(i, user){
-				$list.append('<li data-user="'+user.name+'"><span></span>' +(user.name === self.user.name ? 'You' : user.name)+'</li>');
+				$list.append('<li data-user="'+user.name+'"><img src="http://gravatar.com/avatar/' + user.id +'" /><span></span></li>');
 			});
 
 			$('#user-list').html($list);
