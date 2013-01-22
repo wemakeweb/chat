@@ -53,11 +53,12 @@
 			'click .btn-login-submit' : 'login',
 			'keydown #message-input' : 'keydown',
 			'keyup #message-input' : 'keyup',
-			'click #user-list li' : 'mentionUser',
+			'click .user-list li' : 'mentionUser',
+			'click #conversations > li' : 'roomSwitch'
 		},
 
 		layout : function(){
-			$('#messages').css("height", $(window).height() - 70);
+			$('#messages, .sidebar').css("height", $(window).height() - 70);
 		},
 
 		showLogin : function(){
@@ -108,10 +109,8 @@
 					email : localStorage.getItem("user.email"),
 					name : localStorage.getItem("user.name")
 				};
-
 				return true;
 			}
-			
 		},
 
 		login : function(){
@@ -133,6 +132,7 @@
 			localStorage.setItem("user.name", this.user.name);
 			localStorage.setItem("user.email", this.user.email);
 		},
+
 		connect : function(){
 			this.socket = io.connect(document.location.hostname + ':8080');
 		},
@@ -150,15 +150,29 @@
 			$input.insertAtCaret(' @' + user + ' ');
 		},
 
-		renderUsers : function(users){
-			var $list = $('<ul />'),
-				self = this;
+		roomSwitch : function(event){
+			var $t = $(event.currentTarget),
+				room = $t.data("room");
 
-			$.each(users, function(i, user){
-				$list.append('<li data-user="'+user.name+'"><img src="http://gravatar.com/avatar/' + user.id +'" /><span></span></li>');
+			$('#conversations > li.active').removeClass('active');
+			$t.addClass('active');
+
+			$('#messages').html("");
+			this.socket.emit('switchRoom', room);
+		},
+
+		renderUsers : function(rooms){
+			$('#conversations > li .user-list').html('');
+
+			$.each(rooms, function(room, users){
+				var $list = $('<ul />');
+
+				$.each(users, function(i, user){
+					$list.append('<li data-user="'+user.name+'"><img src="http://gravatar.com/avatar/' + user.id +'" /><span></span></li>');
+				});
+
+				$('#conversations > li[data-room="' + room +'"] .user-list').html($list);
 			});
-
-			$('#user-list').html($list);
 		},
 
 		renderMessage : function(message){
@@ -180,12 +194,13 @@
 				//experimental notifications
 				if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) { 
     				var notification = window.webkitNotifications.createNotification(
-    					'http://gravatar.com/avatar/' + message.user, message.name, message.message);
+    					'http://gravatar.com/avatar/' + message.user + '.jpg', message.name, message.message);
 				    notification.show();
 
-				    notification.onclick = function(){
+				    notification.onclick = $.proxy(function(){
+				    	this.clearNotifications();
 				    	notification.close();
-				    };	
+				    }, this);	
   				}
 
 				this.notifications.push(message.user);

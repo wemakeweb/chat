@@ -18,15 +18,29 @@
         <div id="app">
   
         <div class="sidebar">
-            <ul class="nav nav-list">
-                <li class="nav-header">Conversations</li>
-                <li class="active"><a href="#">Lobby</a></li>
-                <li class="nav-header">Active in this</li>
-            </ul>
-            <div id="user-list">
-
+            <div class="clearfix">
+                <button class="btn btn-new"><i class="icon-plus"></i></button>
             </div>
-            <button style="margin-top: 10px;margin-left: 14px; display:none" id="noti-trigger" class="btn btn-mini" onclick="window.webkitNotifications.requestPermission();">enable chrome notifications</button>
+
+            <ul class="nav nav-list" id="conversations">
+                <li class="active" data-room="1">
+                    <h5>Lobby</h5>
+                    <div class="text">General Talking</div>
+                    <div class="user-list"></div>
+                </li>
+                <li data-room="2">
+                    <h5>Design</h5>
+                    <div class="text">for the creators of the beauty</div>
+                    <div class="user-list"></div>
+                </li>
+                <li data-room="3">
+                    <h5>Dev</h5>
+                    <div class="text">for those who run the world</div>
+                    <div class="user-list"></div>
+                </li>
+            </ul>
+            
+            <button style="margin-top: 10px;margin-left: 14px; display:none" id="noti-trigger" class="btn btn-mini" onclick="window.webkitNotifications.requestPermission();">Desktop Notifications</button>
         </div>
         <div class="chat">
             <div id="messages">
@@ -34,7 +48,7 @@
             </div>
             <div id="input-box">
                 <div id="typing-info"></div>
-                <textarea id="message-input"></textarea>
+                <textarea id="message-input" placeholder="What's going on?"></textarea>
             </div>
         </div>
 
@@ -89,6 +103,5 @@
     <script src="js/plugin.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/app.js"></script>
-
     </body>
 </html>

@@ -59,15 +59,23 @@ socket.sockets.on("error", function(err){
 });
 
 Simon.updateUsers = function(){
-	var list = [];
+	var rooms = {};
+	
 	_.each(this.users, function(user){
-		list.push({
-			id: user.id,
-			name : user.name
-		});
+		if(rooms[user.room]){
+			rooms[user.room].push({
+				id: user.id,
+				name : user.name
+			})
+		} else {
+			rooms[user.room] = [{
+				id: user.id,
+				name : user.name
+			}]
+		}
 	});
 
-	socket.sockets.emit("users", list);
+	socket.sockets.emit("users", rooms);
 };
 
 function User(options){
@@ -111,8 +119,16 @@ User.prototype.sendRecent = function(){
 User.prototype.bind = function(){
 	this.socket.on('message', _.bind(this.onMessage, this));
 	this.socket.on('typing', _.bind(this.onTyping, this));
+	this.socket.on('switchRoom', _.bind(this.onRoomSwitch, this));
 	this.socket.on('disconnect', _.bind(this.disconnect, this));
 }
+User.prototype.onRoomSwitch = function(room){
+	console.log("%s switching in %s", this.name, room);
+	this.join(room);
+	this.sendRecent();
+	Simon.updateUsers();
+};
+
 User.prototype.disconnect = function(){
 	delete Simon.users[this.id];
 	Simon.updateUsers();
