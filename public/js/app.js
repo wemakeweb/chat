@@ -23,6 +23,8 @@
 	App.Views.Main = Backbone.View.extend({
 		notifications : [],
 
+		desktopNotifications : false,
+
 		initialize : function(){
 			this.templates = {
 				message : _.template($.trim($('#template-message').text()))
@@ -36,6 +38,16 @@
 			} else {
 				this.showLogin();
 			}
+
+			if(window.webkitNotifications){
+				if(window.webkitNotifications.checkPermission() === 1){
+					window.webkitNotifications.requestPermission();
+				}
+			}
+
+		/*	i else {
+    
+  }*/
 			
 
 			$(window).on("resize", $.proxy(this.layout, this));
@@ -171,6 +183,13 @@
 			$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 30 }, 200);
 			
 			if(message.time >= this.lastActive && message.name !== this.user.name && (message.user !== this.lastMessage.user || message.user === this.lastMessage.user && message.time > this.lastActive && this.notifications.indexOf(message.user) < 0)){
+
+				//experimental notifications
+				if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) { 
+    				var notification = window.webkitNotifications.createNotification(
+    					'http://gravatar.com/avatar/' + message.user, message.name, message.message);
+				    notification.show();
+  				}
 
 				this.notifications.push(message.user);
 				Tinycon.setBubble(this.notifications.length);
