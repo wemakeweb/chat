@@ -22,6 +22,7 @@
 	};
 	App.Views.Main = Backbone.View.extend({
 		notifications : [],
+		room : 1,
 
 		desktopNotifications : false,
 
@@ -158,6 +159,8 @@
 			$t.addClass('active');
 
 			$('#messages').html("");
+			
+			this.room = room;
 			this.socket.emit('switchRoom', room);
 		},
 
