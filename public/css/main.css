@@ -8,7 +8,6 @@
 	width:200px;
 	float:left;
 	overflow: hidden;
-	display: none;
 }
 
 .chat{
@@ -17,7 +16,11 @@
 	height: 100%;
 	/*max-width: 600px;*/
 }
-#messages{ height:80%; overflow-y: scroll;}
+#messages{ 
+	height:80%; 
+	overflow-y: scroll;
+	border-left:1px solid #ebebeb;
+}
 #input-box {
 width: 100%;
 border-top: 1px solid gray;
@@ -130,7 +133,7 @@ width: 5px;
 height: 5px;
 background: #90DB65;
 margin-right: 6px;
-margin-left: -1px;
+margin-left: 9px;
 position: relative;
 top: -1px;
 border: 1px solid #629B42;
