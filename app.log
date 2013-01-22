@@ -1,9 +1,0 @@
-Mon, 21 Jan 2013 18:21:58 GMT uncaughtException:sss is not defined
-ReferenceError: sss is not defined
-    at Object.<anonymous> (/Users/Sebastian/Desktop/Heythere/chatserver/app.js:144:1)
-    at Module._compile (module.js:449:26)
-    at Object.Module._extensions..js (module.js:467:10)
-    at Module.load (module.js:356:32)
-    at Function.Module._load (module.js:312:12)
-    at Module.runMain (module.js:492:10)
-    at process.startup.processNextTick.process._tickCallback (node.js:244:9)
