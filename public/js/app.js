@@ -165,7 +165,8 @@
 		},
 
 		renderConversationList : function(convs){
-			var $ul = $('<ul />');
+			var $ul = $('<ul />'),
+				self = this;
 
 			$.each(convs, function(name, conv){
 				var $conv = $('#conversations > li[data-room="' + name +'"]'),
@@ -178,7 +179,7 @@
 					}
 					
 					$conv.find(' .text').html( message.name +': ' + message.message );
-					$conv.find('.time').text(message.time);
+					$conv.find('.time').text(self.formatTime(message.time));
 			});
 
 			$('.user-list').html($ul);
@@ -189,13 +190,7 @@
 			message.message = replaceURLWithHTMLLinks(message.message);
 			message.message = message.message.replace(/\r?\n|\r/g, "<br>");
 			message.room = parseInt(message.room);
-
-			var n = new Date(parseInt(message.time)); 
-            if((+new Date() - 86400000) > n){
-                message.time = [('0'+n.getDate()).slice(-2), ('0'+(n.getMonth()+1)).slice(-2), n.getFullYear()].join('.')+' ' + [('0'+n.getMinutes()).slice(-2), ('0'+n.getHours()).slice(-2)].join(':');
-            } else {
-                message.time = [('0'+n.getHours()).slice(-2), ('0'+n.getMinutes()).slice(-2)].join(':');
-            } 
+			message.time = this.formatTime(message.time);
 
 			if(message.room === this.room){
 				if(this.lastMessage && this.lastMessage.user === message.user){
@@ -227,11 +222,11 @@
 				}
 
 				this.lastMessage = message;
-			} else {
-				var $conversation = $('#conversations > li[data-room="' + message.room +'"]');
-				$conversation.find(' .text').html(message.name +': ' + message.message );
-				$conversation.find('.time').text(message.time);
-			}
+			} 
+
+			var $conversation = $('#conversations > li[data-room="' + message.room +'"]');
+			$conversation.find(' .text').html(message.name +': ' + message.message );
+			$conversation.find('.time').text(message.time);
 		},
 
 		renderTyping : function(types){
@@ -247,6 +242,15 @@
 				$('#typing-info').html("");
 			}, 500);
 		},
+
+		formatTime : function(time){
+			var n = new Date(parseInt(time)); 
+            if((+new Date() - 86400000) > n){
+               return [('0'+n.getDate()).slice(-2), ('0'+(n.getMonth()+1)).slice(-2), n.getFullYear()].join('.')+' ' + [('0'+n.getMinutes()).slice(-2), ('0'+n.getHours()).slice(-2)].join(':');
+            } else {
+                return [('0'+n.getHours()).slice(-2), ('0'+n.getMinutes()).slice(-2)].join(':');
+            } 
+		}
 	});
 
 
