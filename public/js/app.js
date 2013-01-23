@@ -22,6 +22,7 @@
 	};
 	App.Views.Main = Backbone.View.extend({
 		notifications : [],
+		mentions : {},
 		room : 1,
 
 		desktopNotifications : false,
@@ -55,7 +56,9 @@
 			'keydown #message-input' : 'keydown',
 			'keyup #message-input' : 'keyup',
 			'click .user-list li' : 'mentionUser',
-			'click #conversations > li' : 'roomSwitch'
+			'click #conversations > li' : 'roomSwitch',
+			'click #mentions li a .close' : 'mentionRemove',
+			'click #mentions li a' : 'mentionShow'
 		},
 
 		layout : function(){
@@ -139,9 +142,61 @@
 		},
 
 		bind : function(){
+			var self = this;
+
 			this.socket.on('message', $.proxy(this.renderMessage, this));
 			this.socket.on('typing', $.proxy(this.renderTyping, this))
 			this.socket.on('updateConversationList', $.proxy(this.renderConversationList, this));
+			this.socket.on('mention', $.proxy(this.renderMention, this));
+			this.socket.once('disconnect', function(){
+				$('#disconnect').fadeIn();
+				self.socket.once('connect', function(){
+					$('#disconnect').fadeOut();
+					self.socket.emit('user.new', self.user);
+				});
+			});
+		},
+
+		mentionShow : function(event){
+			var $li = $(event.currentTarget).parents('li'),
+				room = $li.data('room'),
+				id = $li.data('id'),
+				rooms = ['Lobby', 'Design', 'Dev'];
+
+			if(this.room === parseInt(room) ){
+				var $message = $('.message_part.m' + id).addClass("mentioned");
+				
+				if($message.length > 0){
+					$('#messages').scrollTo($message)
+					return;
+				}
+			}
+
+			var message = this.mentions[id];
+			
+			message = this.sanitizeMessage(message);
+
+			var $mentionDialog = $('#mention-dialog');
+			if(this.room !== parseInt(room)){
+				$mentionDialog.find('.modal-body').html("<h6>You was mentioned in <em>" + rooms[message.room-1] + "</em></h6>");
+			} else {
+				$mentionDialog.find('.modal-body').html("<h6>You was mentioned in the past</h6>");
+			}
+			
+			$mentionDialog.find('.modal-body').append($(this.templates.message({ message: message })))
+			$mentionDialog.modal();	
+
+			event.preventDefault();
+		},
+
+		mentionRemove : function(event){
+			var $li = $(event.currentTarget).parents('li');
+
+			this.socket.emit('mentionRemove', $li.data('id'));
+			$li.remove();
+
+			event.preventDefault();
+			event.stopPropagation();
 		},
 
 		mentionUser : function(event){
@@ -162,6 +217,27 @@
 
 			this.room = room;
 			this.socket.emit('switchRoom', room);
+		},
+
+		sanitizeMessage : function(message){
+			message.message = jQuery('<div/>').text(message.message).html();
+			message.message = replaceURLWithHTMLLinks(message.message);
+			message.message = message.message.replace(/\r?\n|\r/g, "<br>");
+			message.room = parseInt(message.room);
+			message.time = this.formatTime(message.time);
+			return message;
+		},
+
+		renderMention : function(mention){
+			var self = this;
+
+			$.each(mention, function(id, item){
+				if(item.name === self.user.name) return;
+
+				$('#mentions').append('<li data-room="' + item.room + '" data-id="'+id+'"><a href="#" > <b>' + item.name +'</b> mentioned you.<span class="time">' + self.formatTime(item.time) +"</span><button type='button' class='close' >&times;</button></a></li>");
+
+				self.mentions[id] = item;
+			})
 		},
 
 		renderConversationList : function(convs){
@@ -186,15 +262,11 @@
 		},
 
 		renderMessage : function(message){
-			message.message = jQuery('<div/>').text(message.message).html();
-			message.message = replaceURLWithHTMLLinks(message.message);
-			message.message = message.message.replace(/\r?\n|\r/g, "<br>");
-			message.room = parseInt(message.room);
-			message.time = this.formatTime(message.time);
+			message = this.sanitizeMessage(message);
 
 			if(message.room === this.room){
 				if(this.lastMessage && this.lastMessage.user === message.user){
-					this.$lastMessage.find('.message-body').append('<div>' + message.message + '</div>');
+					this.$lastMessage.find('.message-body').append('<div class="message_part m'+message.id +'">' + message.message + '</div>');
 				} else {
 					this.$lastMessage = $(this.templates.message({ message: message }));
 					$('#messages').append(this.$lastMessage);
@@ -240,7 +312,7 @@
 
 			this.typingTimer = setTimeout(function(){
 				$('#typing-info').html("");
-			}, 500);
+			}, 800);
 		},
 
 		formatTime : function(time){

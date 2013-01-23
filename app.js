@@ -112,7 +112,8 @@ Simon.getRecent = function(room, items, cb, ctx){
 					user : vals[1],
 					time : vals[2],
 					name : vals[3],
-					room : vals[4]
+					room : vals[4],
+					id : id
 				});
 
 				resolve();
@@ -128,6 +129,18 @@ Simon.getRecent = function(room, items, cb, ctx){
 
 };
 
+Simon.getMessage = function(id, cb){
+	redis_cli.hmget("chat:message:" + id ,'message', 'user', 'time', 'name','room', function(err, vals){
+		cb({
+			message : vals[0],
+			user : vals[1],
+			time : vals[2],
+			name : vals[3],
+			room : vals[4]
+		});
+	});
+};
+
 function User(options){
 	//we hash the email to get gravatar url & that hash is the user id
 	var hash = crypto.createHash('md5');
@@ -140,9 +153,32 @@ function User(options){
 	this.bind();
 	this.join(1);
 	this.sendRecent();
+	this.sendMentions();
 };
 
+User.prototype.sendMentions = function(){
+	var _mentions = {},
+		fetch = 0,
+		self = this;
 
+	redis_cli.lrange('chat:mention:'+ this.name, 0,  -1, function(err, mentions){
+		fetch = mentions.length;
+
+		mentions.forEach(function(id){
+			Simon.getMessage(id, function(message){
+				_mentions[id] = message;
+				resolve();
+			});
+
+		})
+	});
+
+	function resolve(){
+		if(--fetch === 0){
+			self.socket.emit("mention", _mentions)
+		} 
+	};
+};
 
 User.prototype.sendRecent = function(){
 	var self = this;
@@ -159,6 +195,7 @@ User.prototype.bind = function(){
 	this.socket.on('typing', _.bind(this.onTyping, this));
 	this.socket.on('switchRoom', _.bind(this.onRoomSwitch, this));
 	this.socket.on('disconnect', _.bind(this.disconnect, this));
+	this.socket.on('mentionRemove', _.bind(this.mentionRemove, this));
 }
 User.prototype.onRoomSwitch = function(room){
 	console.log("%s switching in %s", this.name, room);
@@ -171,6 +208,9 @@ User.prototype.disconnect = function(){
 	delete Simon.users[this.id];
 	Simon.updateConversationList();
 };
+User.prototype.mentionRemove = function(id){
+	redis_cli.lrem('chat:mention:' + this.name, -1, id);
+};
 User.prototype.join = function(room){
 	if(this.room){
 		this.socket.leave(this.room);
@@ -181,18 +221,18 @@ User.prototype.join = function(room){
 };
 
 User.prototype.onMessage = function(message){
-	var messageStr =  message;
+	var messageStr =  message,
+		mentions = messageStr.match(/\B@([\w-]+)/gm);
 
-		//TODO check if messages contains a mentioned user via @user
-
-	var m = {
+	var id = ++Simon.message_index,
+	m = {
 		message : messageStr,
 		name : this.name,
 		user : this.id,
 		time : new Date().getTime(),
 		room : this.room,
-	},
-	id = ++Simon.message_index;
+		id : id
+	};
 
 	console.log("#%s from %s to %s", id, this.name, this.room);
 	
@@ -207,6 +247,40 @@ User.prototype.onMessage = function(message){
 
 	//push the message to the room list
 	redis_cli.lpush("chat:room:" + this.room, id);
+
+	if(mentions && mentions.length > 0){
+		mentions.forEach(function(mention){
+			var mention = mention.replace('@', ''),
+				_mention = {};
+
+			//refactor the whole mention system
+			_mention[id] = m;
+
+
+			if(mention === 'all'){
+				//uaaaah
+				var users = _.difference(['Sebastian', 'domburrr', 'Fabian', 'Andi', 'Benjamin'], Simon.users, [this.name]);
+
+				users.forEach(function(user){
+					redis_cli.lpush('chat:mention:'+ user, id);
+				});
+
+				socket.sockets.emit('mention', _mention);
+			} else {
+				var user = _.where(Simon.users, { name : mention });
+				
+				if(user.length > 0){
+					//the user is online and we emit the event
+					user[0].socket.emit('mention', _mention);
+				} else {
+					//we store it in db
+					redis_cli.lpush('chat:mention:'+ mention, id);
+				}
+			}
+		})
+	}
+
+	
 
 	//broadcast message to all others
 	socket.sockets.emit('message', m);
