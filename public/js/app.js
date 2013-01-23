@@ -318,7 +318,7 @@
 		formatTime : function(time){
 			var n = new Date(parseInt(time)); 
             if((+new Date() - 86400000) > n){
-               return [('0'+n.getDate()).slice(-2), ('0'+(n.getMonth()+1)).slice(-2), n.getFullYear()].join('.')+' ' + [('0'+n.getMinutes()).slice(-2), ('0'+n.getHours()).slice(-2)].join(':');
+               return [('0'+n.getDate()).slice(-2), ('0'+(n.getMonth()+1)).slice(-2), n.getFullYear()].join('.')+' ' + [('0'+n.getHours()).slice(-2), ('0'+n.getMinutes()).slice(-2)].join(':');
             } else {
                 return [('0'+n.getHours()).slice(-2), ('0'+n.getMinutes()).slice(-2)].join(':');
             } 
