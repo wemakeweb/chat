@@ -221,8 +221,18 @@
 
 		sanitizeMessage : function(message){
 			message.message = jQuery('<div/>').text(message.message).html();
-			message.message = replaceURLWithHTMLLinks(message.message);
 			message.message = message.message.replace(/\r?\n|\r/g, "<br>");
+
+			var imgMatch = message.message.match(/^((\w+):)?\/\/((\w|\.)+(:\d+)?)[^:]+\.(jpe?g|gif|png)$/);
+
+			if(imgMatch){
+				message.message = message.message.replace(imgMatch[0], '<img src="' + imgMatch[0] + '" class="auto-img"/><br /><a href="' + imgMatch[0] + '">' + imgMatch[0] + '</a>');
+
+			} else {
+				message.message = replaceURLWithHTMLLinks(message.message);
+			}
+
+
 			message.room = parseInt(message.room);
 			message.time = this.formatTime(message.time);
 			return message;
@@ -271,6 +281,7 @@
 					this.$lastMessage = $(this.templates.message({ message: message }));
 					$('#messages').append(this.$lastMessage);
 				}
+
 
 				$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 30 }, 200);
 				
