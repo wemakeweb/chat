@@ -46,7 +46,9 @@
 			}
 
 			$(window).on("resize", $.proxy(this.layout, this));
-			$(window).on("mousemove", $.proxy(this.active, this));
+			$(window).on("blur", $.proxy(this.inactive, this));
+			$(window).on("focus", $.proxy(this.active, this));
+			
 		},
 
 		el : $('#app'),
@@ -92,8 +94,11 @@
 			if(this.notifications.length > 0){
 				this.clearNotifications();
 			}
-
-			this.lastActive = new Date();
+			this.windowActive = true;
+		},
+		
+		inactive : function(){
+			this.windowActive = false;
 		},
 
 		clearNotifications : function(){
@@ -287,7 +292,7 @@
 
 				$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 30 }, 200);
 				
-				if(message_timestamp >= this.lastActive && message.name !== this.user.name && (message.user !== this.lastMessage.user || message.user === this.lastMessage.user && message.time > this.lastActive && this.notifications.indexOf(message.user) < 0)){
+				if(!this.windowActive &&  (message.user !== this.lastMessage.user || message.user === this.lastMessage.user && message.time > this.lastActive && this.notifications.indexOf(message.user) < 0)){
 
 					//experimental notifications
 					if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) { 
