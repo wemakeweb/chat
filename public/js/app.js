@@ -272,6 +272,8 @@
 		},
 
 		renderMessage : function(message){
+			var message_timestamp = message.time;
+			
 			message = this.sanitizeMessage(message);
 
 			if(message.room === this.room){
@@ -285,7 +287,7 @@
 
 				$('#messages').stop().animate({ scrollTop: $('#messages')[0].scrollHeight + 30 }, 200);
 				
-				if(message.time >= this.lastActive && message.name !== this.user.name && (message.user !== this.lastMessage.user || message.user === this.lastMessage.user && message.time > this.lastActive && this.notifications.indexOf(message.user) < 0)){
+				if(message_timestamp >= this.lastActive && message.name !== this.user.name && (message.user !== this.lastMessage.user || message.user === this.lastMessage.user && message.time > this.lastActive && this.notifications.indexOf(message.user) < 0)){
 
 					//experimental notifications
 					if (window.webkitNotifications && window.webkitNotifications.checkPermission() == 0) { 
