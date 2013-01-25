@@ -225,7 +225,7 @@ width: 300px !important;
 box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.28);
 margin-bottom: 10px;
 margin-top: 5px;
-float:none!;
+float:none !important;
 }
 #conversations .auto-img{
 	display: none;
