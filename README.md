@@ -1,6 +1,6 @@
 #Chatserver
 ===
-_a small, experimental redis based chatserver_
+_a small, experimental, really hacky, redis based chatserver_
 ##Install
 redis is required to run
 
